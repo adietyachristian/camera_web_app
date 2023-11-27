@@ -23,6 +23,7 @@ class _CameraScreenState extends State<CameraScreen>
     with WidgetsBindingObserver {
   CameraController? controller;
   VideoPlayerController? videoController;
+  int _timer = 0;
 
   File? _imageFile;
   File? _videoFile;
@@ -382,6 +383,33 @@ class _CameraScreenState extends State<CameraScreen>
                                     child: Column(
                                       mainAxisSize: MainAxisSize.min,
                                       children: [
+                                        if (_timer != 0)
+                                          Container(
+                                            height: 50,
+                                            margin: const EdgeInsets.only(
+                                                bottom: 8),
+                                            padding: const EdgeInsets.all(10),
+                                            decoration: BoxDecoration(
+                                              color: Colors.white30,
+                                              borderRadius:
+                                                  BorderRadius.circular(20),
+                                            ),
+                                            child: Row(
+                                              mainAxisSize: MainAxisSize.min,
+                                              children: [
+                                                const SizedBox(width: 16),
+                                                Text(
+                                                  '$_timer',
+                                                  style: const TextStyle(
+                                                    color: Colors.white,
+                                                    fontSize: 24,
+                                                    fontWeight: FontWeight.bold,
+                                                  ),
+                                                ),
+                                                const SizedBox(width: 16),
+                                              ],
+                                            ),
+                                          ),
                                         if (_isSettingsExpanded)
                                           Container(
                                             height: 50,
@@ -398,10 +426,23 @@ class _CameraScreenState extends State<CameraScreen>
                                               children: [
                                                 const SizedBox(width: 16),
                                                 InkWell(
-                                                  onTap: () {},
-                                                  child: const Icon(
+                                                  onTap: () {
+                                                    if (_isRecordingInProgress) {
+                                                      return;
+                                                    }
+                                                    setState(() {
+                                                      _timer = _timer == 0
+                                                          ? 3
+                                                          : _timer == 3
+                                                              ? 10
+                                                              : 0;
+                                                    });
+                                                  },
+                                                  child: Icon(
                                                     Icons.timer_outlined,
-                                                    color: Colors.white,
+                                                    color: _timer == 0
+                                                        ? Colors.white
+                                                        : Colors.yellow,
                                                   ),
                                                 ),
                                                 const SizedBox(width: 32),
@@ -550,6 +591,18 @@ class _CameraScreenState extends State<CameraScreen>
                                     InkWell(
                                       onTap: _isVideoCameraSelected
                                           ? () async {
+                                              if (_timer != 0) {
+                                                for (int i = _timer;
+                                                    i > 0;
+                                                    i--) {
+                                                  await Future.delayed(
+                                                      const Duration(
+                                                          seconds: 1));
+                                                  setState(() {
+                                                    _timer = i - 1;
+                                                  });
+                                                }
+                                              }
                                               if (_isRecordingInProgress) {
                                                 XFile? rawVideo =
                                                     await stopVideoRecording();
@@ -578,6 +631,18 @@ class _CameraScreenState extends State<CameraScreen>
                                               }
                                             }
                                           : () async {
+                                              if (_timer != 0) {
+                                                for (int i = _timer;
+                                                    i > 0;
+                                                    i--) {
+                                                  await Future.delayed(
+                                                      const Duration(
+                                                          seconds: 1));
+                                                  setState(() {
+                                                    _timer = i - 1;
+                                                  });
+                                                }
+                                              }
                                               XFile? rawImage =
                                                   await takePicture();
                                               File imageFile =
